@@ -36,6 +36,7 @@ dependencies = [
     'tqdm',
     'stable_baselines3',
     'sb3-contrib',
+    'gekko',
 ]
 
 
