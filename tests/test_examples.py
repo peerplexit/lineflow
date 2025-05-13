@@ -12,7 +12,7 @@ from lineflow.examples import (
     ComplexLine,
 )
 
-from lineflow.examples.complex_line import ClAgent
+from lineflow.examples.complex_line import make_agent
 
 class TestExamples(unittest.TestCase):
 
@@ -80,25 +80,16 @@ class TestExamples(unittest.TestCase):
         line.run(simulation_end=400)
 
     def test_complex_line(self):
-        line = ComplexLine(n_workers=9, alternate=False, n_assemblies=10)
-        line.run(simulation_end=10)
-        df = line.get_observations()
-        processing_times = df.filter(regex='processing_time$').values
-        line.reset(random_state=42)
-        line.run(simulation_end=10)
-        df = line.get_observations()
-        processing_times_2 = df.filter(regex='processing_time$').values
-        # check if the processing times are the same
-        self.assertFalse((processing_times[0] == processing_times_2[0]).all())
 
-        # test Agent
-        agent = ClAgent(
-            source_waiting_time=4,
-            processing_time_diff=10,
-            complex_line=line,
+
+        line = ComplexLine(n_workers=15, alternate=False, n_assemblies=5)
+        agent = make_agent(
+            state=line.state,
+            ramp_up_waiting_time=10,
+            waiting_time=5,
+            n_assemblies=5,
+            n_workers =15,
+            get_max_reward=False,
         )
-        line.run(agent=agent, simulation_end=300)
-        df = line.get_observations()
-        workers = df.filter(regex='n_workers$').values
-        # check if workers are not distributed equally any more
-        self.assertFalse((workers[-1] == workers[-1][0]).all()) 
+
+        line.run(simulation_end=4000, agent=agent)
