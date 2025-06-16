@@ -16,7 +16,7 @@ maintainers = [
 description = 'Python tool to simulate assembly lines.'
 readme = "README.md"
 dynamic = ['version']
-requires-python = "<3.13"
+requires-python = "<3.14"
 dependencies = [
     'pandas',
     'scipy',
@@ -24,13 +24,6 @@ dependencies = [
     'numpy<2.0.0',
     'matplotlib',
     'pygame',
-    'mkdocs',
-    'mkdocs-material',
-    'mkdocstrings-python',
-    'mike',
-    'ruff',
-    'pytest',
-    'pyarrow', # ?
     'torch',
     'wandb',
     'tqdm',
@@ -41,7 +34,16 @@ dependencies = [
 
 
 [project.optional-dependencies]
-dev = []
+dev = [
+    'pytest',
+    'pytest-cov',
+    'mkdocs',
+    'mkdocs-material',
+    'mkdocstrings-python',
+    'mike',
+    'ruff',
+    'debugpy',
+]
 
 [tool.setuptools.packages.find]
 include = ['lineflow*']
