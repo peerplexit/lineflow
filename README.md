@@ -43,7 +43,7 @@ class SimpleLine(Line):
         
         # Wire them with buffers
         source.connect_to_output(station=process, capacity=3)
-        process.connect_to_output(station=process, capacity=2)
+        process.connect_to_output(station=sink, capacity=2)
 
 
 line = SimpleLine()
