@@ -104,7 +104,7 @@ class TestSwitches(unittest.TestCase):
 
         # All parts should visit P1, none vists P2 and P3
         p1, p2, p3 = self.get_parts_at_processes(line)
-        self.assertListEqual(p1, [f'M1_cr_{i}' for i in range(1, 7)])
+        self.assertListEqual(p1, [f'M1_carrier_{i}' for i in range(1, 7)])
         self.assertListEqual(p2, [])
         self.assertListEqual(p3, [])
 
@@ -135,9 +135,18 @@ class TestSwitches(unittest.TestCase):
 
         p1, p2, p3 = self.get_parts_at_processes(line)
 
-        self.assertListEqual(p1, ['M1_cr_1', 'M2_cr_2', 'M1_cr_4', 'M2_cr_5'])
-        self.assertListEqual(p2, ['M2_cr_1', 'M1_cr_3', 'M2_cr_4', 'M1_cr_6'])
-        self.assertListEqual(p3, ['M1_cr_2', 'M2_cr_3', 'M1_cr_5'])
+        self.assertListEqual(
+            p1, 
+            ['M1_carrier_1', 'M2_carrier_2', 'M1_carrier_4', 'M2_carrier_5']
+        )
+        self.assertListEqual(
+            p2, 
+            ['M2_carrier_1', 'M1_carrier_3', 'M2_carrier_4', 'M1_carrier_6']
+        )
+        self.assertListEqual(
+            p3, 
+            ['M1_carrier_2', 'M2_carrier_3', 'M1_carrier_5']
+        )
 
     def test_with_policy_on_fixed_index(self):
 
@@ -157,5 +166,5 @@ class TestSwitches(unittest.TestCase):
         line.run(100, agent=policy)
         p1, p2, p3 = self.get_parts_at_processes(line)
         self.assertListEqual(p1, [])
-        self.assertListEqual(p2, [f'M2_cr_{i}' for i in range(1, 7)])
+        self.assertListEqual(p2, [f'M2_carrier_{i}' for i in range(1, 7)])
         self.assertListEqual(p3, [])

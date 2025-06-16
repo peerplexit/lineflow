@@ -26,7 +26,7 @@ class SmallLine(Line):
         mc1 = Magazine('MC1', unlimited_carriers=True)
         ma1 = Magazine('MA1', unlimited_carriers=True)
 
-        a1 = Source('A1', part_specs=[{"assembly_condition": 20}])
+        a1 = Source('A1', carrier_specs={'A': {'Part': {'C2': {"assembly_condition": 20}}}})
 
         c1 = Source('C1')
 

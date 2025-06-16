@@ -195,17 +195,60 @@ class TestMagazine(unittest.TestCase):
         self.removal_line.run(simulation_end=50, agent=policy)
         df = self.removal_line.get_observations("Magazine")
         # Magazine produces carrier 'Magazine_cr_1'
-        self.assertEqual(df.iloc[2].carrier, 'Magazine_cr_1')
+        self.assertEqual(df.iloc[2].carrier, 'Magazine_carrier_1')
         # Afterwards all carriers are removed exept one (the tenth)
-        self.assertEqual(df.iloc[5].carrier, 'Magazine_cr_10')
+        self.assertEqual(df.iloc[5].carrier, 'Magazine_carrier_10')
 
-    def test_part_specs(self):
+    def test_carrier_specs(self):
         source = Source(
             name="TestSource",
-            part_specs=[
-                {"assembly_condition": 8}
-            ]
+            carrier_specs={
+                'Carrier1': {
+                    'Part1': {
+                        'C1': {"assembly_condition": 11},
+                        'C2': {"assembly_condition": 12},
+                    },
+                    'Part2': {
+                        'C1': {"assembly_condition": 11},
+                        'C3': {"assembly_condition": 13},
+                    },
+                },
+                'Carrier2': {
+                    'Part1': {
+                        'C1': {"assembly_condition": 21},
+                        'C2': {"assembly_condition": 22},
+                    },
+                    'Part2': {
+                        'C1': {"assembly_condition": 21},
+                        'C3': {"assembly_condition": 23},
+                    },
+                }
+            }
         )
+        source.init(np.random.RandomState(0))
         source.env = simpy.Environment()
-        parts = source.create_parts()
-        self.assertTrue(parts[0]["assembly_condition"] == 8)
+        carrier = source.create_carrier()
+
+        self.assertEqual(carrier.name, 'TestSource_Carrier1_1')
+
+        parts = source.create_parts(carrier)
+        self.assertEqual(len(parts), 2)
+
+        self.assertDictEqual(
+            parts[0].specs['C1'],
+            {"assembly_condition": 11},
+        )
+        self.assertDictEqual(
+            parts[0].specs['C2'],
+            {"assembly_condition": 12},
+        )
+
+
+        self.assertDictEqual(
+            parts[1].specs['C1'],
+            {"assembly_condition": 11},
+        )
+        self.assertDictEqual(
+            parts[1].specs['C3'],
+            {"assembly_condition": 13},
+        )

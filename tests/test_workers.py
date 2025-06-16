@@ -138,7 +138,7 @@ class LineOneWorker(Line):
 class TestWorkers(unittest.TestCase):
 
     def setUp(self):
-        self.line = LineWithWorkers()
+        self.line = LineWithWorkers(realtime=True)
         self.worker_cols = [f"pool_W{i}" for i in range(10)]
 
     def test_run(self):
@@ -153,7 +153,7 @@ class TestWorkers(unittest.TestCase):
         return df
 
     def test_turn_on(self):
-        self.line.run(200, agent=all_to_one)
+        self.line.run(200, agent=all_to_one, visualize=True)
         df = self.line.get_observations()
         df = self.compute_n_workers(df)
         # When C3 finishes work after T=50 and before T=70, there is no worker at C3

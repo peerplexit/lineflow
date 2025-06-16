@@ -24,11 +24,17 @@ class LineWithAssembly(Line):
 
     def build(self):
 
-        m1 = Magazine('M1', unlimited_carriers=True)
+        m1 = Magazine(
+            name='M1', 
+            unlimited_carriers=True, 
+            carrier_specs={
+                'A': {'Part': {'C2': {"assembly_condition": 20}}}
+            }
+        )
 
         m2 = Magazine('M2', unlimited_carriers=True)
 
-        a1 = Source('A1', part_specs=[{"assembly_condition": 20}])
+        a1 = Source('A1')
 
         c1 = Source('C1')
 

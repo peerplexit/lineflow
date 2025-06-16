@@ -29,14 +29,17 @@ class ComponentAssembly(Line):
             'A1',
             processing_time=4,
             position=(500, 300),
-            part_specs=[{
-                "assembly_condition": 40
-            }],
+            carrier_specs={
+                'A': {
+                    'ComponentA': {
+                        'C21': {"assembly_condition": 40},
+                        'C22': {"assembly_condition": 40},
+                    }
+                }
+            },
             unlimited_carriers=True,
             carrier_capacity=1,
         )
-
-
 
         switch1 = Switch('S1', alternate=True, position=(200, 300),)
         switch2 = Switch('S2', alternate=True, position=(300, 300))
@@ -95,9 +98,13 @@ class ComponentAssembly(Line):
             'A2',
             processing_time=5,
             position=(600, 400),
-            part_specs=[{
-                "assembly_condition": 400
-            }],
+            carrier_specs={
+                'B': {
+                    'Component_B': {
+                        'C5': {"assembly_condition": 400},
+                    }
+                }
+            },
             unlimited_carriers=True,
             carrier_capacity=1,
         )

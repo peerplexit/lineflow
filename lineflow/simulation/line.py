@@ -89,6 +89,8 @@ class Line:
                 raise ValueError(f'Multiple objects with name {obj.name} exist')
             self._objects[obj.name] = obj
 
+        # TODO: Validate carrier specs
+
     def _build_states(self):
         """
         Builds the states of the line objects as well as the LineState
