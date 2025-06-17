@@ -6,11 +6,11 @@ from lineflow.helpers import (
     compute_performance_coefficient,
 )
 from lineflow.simulation import (
-    Line,
-    Sink,
-    Source,
-    Process,
-    WorkerPool,
+    line,
+    sink,
+    source,
+    process,
+    workerpool,
 )
 
 
@@ -153,7 +153,7 @@ class TestWorkers(unittest.TestCase):
         return df
 
     def test_turn_on(self):
-        self.line.run(200, agent=all_to_one, visualize=True)
+        self.line.run(200, agent=all_to_one, visualize=False)
         df = self.line.get_observations()
         df = self.compute_n_workers(df)
 

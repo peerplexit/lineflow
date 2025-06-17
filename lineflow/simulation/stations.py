@@ -718,10 +718,10 @@ class Source(Station):
         """
 
         parts = []
-        for part_name, part_spec in carrier.part_specs.items():
+        for part_id, (part_name, part_spec) in enumerate(carrier.part_specs.items()):
             part = Part(
                 env=self.env,
-                name=f"{self.name}_{carrier.name}_{part_name}",
+                name=f"{carrier.name}_{part_name}_{part_id}",
                 specs=part_spec,
             )
             part.create(self.position)
