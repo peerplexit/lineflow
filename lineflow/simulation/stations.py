@@ -456,7 +456,7 @@ class Assembly(Station):
                 # Process components
                 yield self.env.process(self.set_to_work())
                 processing_time = self._sample_exp_time(
-                    time=self.processing_time,
+                    time=self.processing_time + carrier.get_additional_processing_time(self.name),
                     scale=self.processing_std,
                 )
                 yield self.env.timeout(processing_time)
@@ -552,7 +552,7 @@ class Process(Station):
                 yield self.env.process(self.set_to_work())
 
                 processing_time = self._sample_exp_time(
-                    time=self.processing_time,
+                    time=self.processing_time + carrier.get_additional_processing_time(self.name),
                     scale=self.processing_std,
                     rework_probability=self.rework_probability,
                 )

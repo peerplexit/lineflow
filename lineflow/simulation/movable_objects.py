@@ -211,3 +211,15 @@ class Carrier(MovableObject):
     def __iter__(self):
         for part in self.parts.values():
             yield part
+
+    def get_additional_processing_time(self, station):
+         total_time = 0
+
+         for part in self:
+             processing_time = part.specs.get(station, {}).get("extra_processing_time", 0)
+             total_time += processing_time
+
+         return total_time
+
+
+
