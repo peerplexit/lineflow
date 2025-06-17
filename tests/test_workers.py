@@ -6,11 +6,11 @@ from lineflow.helpers import (
     compute_performance_coefficient,
 )
 from lineflow.simulation import (
-    line,
-    sink,
-    source,
-    process,
-    workerpool,
+    Line,
+    Sink,
+    Source,
+    Process,
+    WorkerPool,
 )
 
 

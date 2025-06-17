@@ -77,6 +77,19 @@ class TestAssemblyLine(unittest.TestCase):
         self.assertIsInstance(self.line['Buffer_C1_to_C2'], Buffer)
         self.assertIsInstance(self.line['C2'], Assembly)
 
+    def test_valid_carrier_specs(self):
+        self.line.run(simulation_end=15)
+
+        with self.assertRaises(ValueError):
+            self.line._validate_carrier_specs(
+                {'carrier_name': {
+                    'Part': {
+                        'C2': {"assembly_condition": 20},
+                        'M2': {"assembly_condition": 20},
+                        'C33': {"assembly_condition": 20}
+                    }
+                }})
+
     def test_processing_times_with_randomization(self):
         line = LineWithAssembly(std=0.9)
 
