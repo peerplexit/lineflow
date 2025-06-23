@@ -37,6 +37,10 @@ If you use our work in your research, please consider citing us with
 
 ## Authors
 
-- [Kai Müller](https://www.hs-kempten.de/personen/kai-mueller) (University of Applied Sciences, Kempten)
+- [Kai Müller](https://mueller-kai.github.io) (University of Applied Sciences, Kempten)
 - [Tobias Windisch](https://www.tobias-windisch.de) (University of Applied Sciences, Kempten)
 - Martin Wenzel (University of Applied Sciences, Kempten)
+
+## Funding
+
+The research behind LineFlow is funded by the Bavarian state ministry of research. Learn more [here](https://kefis.fza.hs-kempten.de/de/forschungsprojekt/599-lineflow).
