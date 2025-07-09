@@ -223,12 +223,12 @@ station:
 carrier_spec = {
     "CarrierA": {
         "Part1": {
-            "P1": {"processing_time": 5},
+            "P1": {"extra_processing_time": 5},
             "A1": {"assembly_condition": 10},
         }
         "Part2": {
-            "P1": {"processing_time": 1},
-            "P2": {"processing_time": 3},
+            "P1": {"extra_processing_time": 1},
+            "P2": {"extra_processing_time": 3},
             "A1": {"assembly_condition": 8},
         }
     },
@@ -237,11 +237,11 @@ carrier_spec = {
             "A1": {"assembly_condition": 10},
         }
         "Part2": {
-            "P2": {"processing_time": 3},
+            "P2": {"extra_processing_time": 3},
         }
         "Part3": {
-            "P1": {"processing_time": 1},
-            "P2": {"processing_time": 3},
+            "P1": {"extra_processing_time": 1},
+            "P2": {"extra_processing_time": 3},
             "A1": {"assembly_condition": 8},
         }
     }
