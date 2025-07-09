@@ -213,7 +213,7 @@ sequence of initial parts onto the newly created carrier.
 At each station the carrier visits, new parts can be added or existing parts removed, typically at  
 [`Assembly`][lineflow.simulation.stations.Assembly] stations.
 
-Parts can show different behaviors at different stations. For instance, a certain part may requires
+Parts can show different behaviors at different stations. For instance, a certain part may require
 an additional processing time at a given process or has to statisfy a certain condition before it
 can be assembled. These specification are fixed when creating the part at the source and can be
 given in a `carrier_spec`. For instance, the following parameter can be given when creating a source
