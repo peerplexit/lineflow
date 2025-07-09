@@ -198,9 +198,13 @@ class ComplexLine(Line):
             unlimited_carriers=True,
             carrier_capacity=1,
             actionable_waiting_time=True,
-            part_specs=[{
-                "assembly_condition": self.assembly_condition,
-            }],
+            carrier_specs={
+                'Carrier': {
+                    'Part': {
+                        f'A{i}': {"assembly_condition": self.assembly_condition} for i in range(self.n_assemblies)
+                    }
+                }
+            }
         )
 
         switch = Switch(

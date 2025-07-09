@@ -7,3 +7,4 @@ from lineflow.examples.worker_assignment import WorkerAssignment #noqa
 from lineflow.examples.double_source import DoubleSource #noqa
 from lineflow.examples.waiting_time import WaitingTime #noqa
 from lineflow.examples.complex_line import ComplexLine #noqa
+from lineflow.examples.part_dependence import PartDependentProcessLine #noqa

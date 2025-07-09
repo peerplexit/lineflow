@@ -205,76 +205,51 @@ updated, this is directly visible in the state of the line.
 
 ## Parts and Carriers
 
+In `LineFlow`, every part is transported by a carrier as it
+moves through the production line. Hence, carriers act as mobile containers: once a
+[`Source`][lineflow.simulation.stations.Source] (or a
+[`Magazine`][lineflow.simulation.stations.Magazine]) creates a new carrier, it puts a predefined
+sequence of initial parts onto the newly created carrier.
+At each station the carrier visits, new parts can be added or existing parts removed, typically at  
+[`Assembly`][lineflow.simulation.stations.Assembly] stations.
 
-### Carriers
-In LineFlow, every individual Part is always transported by a Carrier as it
-moves through the production line. Carriers act as mobile containers: once a
-Source station creates a new Part (or set of Parts), it places them onto a
-Carrier, which then follows the sequence of Buffers and Stations. At each step,
-the Carrier carries its load of Parts downstream—whether through processing,
-assembly, or inspection—until it reaches a Sink. Because Parts never traverse
-the line on their own, all material flow, blocking behavior, and routing logic
-hinge on Carrier movement and occupancy.
+Parts can show different behaviors at different stations. For instance, a certain part may require
+an additional processing time at a given process or has to statisfy a certain condition before it
+can be assembled. These specification are fixed when creating the part at the source and can be
+given in a `carrier_spec`. For instance, the following parameter can be given when creating a source
+station:
 
-### Parts
+```python
+carrier_spec = {
+    "CarrierA": {
+        "Part1": {
+            "P1": {"extra_processing_time": 5},
+            "A1": {"assembly_condition": 10},
+        }
+        "Part2": {
+            "P1": {"extra_processing_time": 1},
+            "P2": {"extra_processing_time": 3},
+            "A1": {"assembly_condition": 8},
+        }
+    },
+    "CarrierB": {
+        "Part1": {
+            "A1": {"assembly_condition": 10},
+        }
+        "Part2": {
+            "P2": {"extra_processing_time": 3},
+        }
+        "Part3": {
+            "P1": {"extra_processing_time": 1},
+            "P2": {"extra_processing_time": 3},
+            "A1": {"assembly_condition": 8},
+        }
+    }
+}
+```
 
-1. **Define Part Specifications**:
-    - Part specifications are defined as a list of dictionaries, where each dictionary contains the attributes of a part. For example:
-      ```python
-      part_specs = [
-            {"attribute1": value1, "attribute2": value2},
-            {"attribute1": value3, "attribute2": value4},
-      ]
-      ```
-
-2. **Initialize the Source Station**:
-    - When initializing a [`Source`][lineflow.simulation.stations.Source]
-      station, pass the part specs list to the part_specs parameter:
-      ```python
-      source = Source(
-            name="source_name",
-            part_specs=part_specs,
-            # other parameters
-      )
-      ```
-
-3. **Create Parts**:
-    - The [`create_parts`][lineflow.simulation.stations.Source.create_parts] method of the
-      [`Source`][lineflow.simulation.stations.Source] class is responsible for
-      creating parts based on the part_specs attribute. This method iterates
-      over each dictionary in the part_specs list and creates a [`Part`][lineflow.simulation.movable_objects.Part] object
-      for each specification:
-      ```python
-      def create_parts(self):
-            parts = []
-            for part_spec in self.part_specs:
-                 part = Part(
-                      env=self.env,
-                      name=self.name + '_part_' + str(self.part_id),
-                      specs=part_spec,
-                 )
-                 self.part_id += 1
-                 part.create(self.position)
-                 parts.append(part)
-            return parts
-      ```
-
-4. **Assemble Parts on Carrier**:
-    - Once the parts are created, they can be assembled onto a carrier using the
-      [`assemble_parts_on_carrier`][lineflow.simulation.stations.Source.assemble_parts_on_carrier]
-      method:
-      ```python
-      def assemble_parts_on_carrier(self, carrier, parts):
-            for part in parts:
-                 carrier.assemble(part)
-      ```
-
-5. **Derive Actions from Part Specifications**:
-    - Actions can be derived from the new state of the parts. The [`apply`][lineflow.simulation.stations.Station] method in the [`Station`][lineflow.simulation.stations.Station] class can be used to apply these actions:
-      ```python
-      def apply(self, actions):
-            self._derive_actions_from_new_state(actions)
-            self.state.apply(actions)
-      ```
-
-By following these steps, you can create new parts with specific attributes, initialize them in a source station, and derive actions based on their specifications.
+Here, the source creates (randomly) either a carrier of type `CarrierA` or of `CarrierB`. `CarrierA`
+has two parts, `Part1` and `Part2`, each with their own specifications. For instance, `Part1`
+consues an additional processing time of 5 time stepts at station `P1` and needs to be assembled at
+station `A1` within `10` time steps from its creation. Similarly, `Part2` has a processing time of 1
+at `P1`, 3 at `P2`, and an assembly condition of 8 at `A1`.

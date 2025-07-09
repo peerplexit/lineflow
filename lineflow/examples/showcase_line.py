@@ -49,9 +49,7 @@ class ShowCase(Line):
             processing_time=5,
             waiting_time=0,
             carrier_capacity=1,
-            part_specs=[{
-                "assembly_condition": 100
-            }],
+            carrier_specs={'Carrier': {'Part': {'Assembly': {"assembly_condition": 100}}}},
             unlimited_carriers=True,
             actionable_waiting_time=True,
         )

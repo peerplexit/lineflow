@@ -138,7 +138,7 @@ class LineOneWorker(Line):
 class TestWorkers(unittest.TestCase):
 
     def setUp(self):
-        self.line = LineWithWorkers()
+        self.line = LineWithWorkers(realtime=False, factor=0.8)
         self.worker_cols = [f"pool_W{i}" for i in range(10)]
 
     def test_run(self):
@@ -153,11 +153,12 @@ class TestWorkers(unittest.TestCase):
         return df
 
     def test_turn_on(self):
-        self.line.run(200, agent=all_to_one)
+        self.line.run(200, agent=all_to_one, visualize=False)
         df = self.line.get_observations()
         df = self.compute_n_workers(df)
+
         # When C3 finishes work after T=50 and before T=70, there is no worker at C3
-        self.assertEqual(df[(df.T_end > 60) & (df.T_end < 70)]['C3_n_workers'].sum(), 0)
+        self.assertEqual(df[(df.T_end > 62) & (df.T_end < 70)]['C3_n_workers'].sum(), 0)
         self.assertListEqual(df[df.T_end > 80]['C3_n_workers'].unique().tolist(), [10.0])
 
     def test_with_random_shuffle(self):

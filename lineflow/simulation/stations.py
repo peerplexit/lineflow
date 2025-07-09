@@ -408,7 +408,7 @@ class Assembly(Station):
         `True` is returned. Otherwise, `False` is returned.
         """
         for component in carrier:
-            if not component.is_valid_for_assembly():
+            if not component.is_valid_for_assembly(self.name):
                 return True
         return False
 
@@ -456,7 +456,7 @@ class Assembly(Station):
                 # Process components
                 yield self.env.process(self.set_to_work())
                 processing_time = self._sample_exp_time(
-                    time=self.processing_time,
+                    time=self.processing_time + carrier.get_additional_processing_time(self.name),
                     scale=self.processing_std,
                 )
                 yield self.env.timeout(processing_time)
@@ -552,7 +552,7 @@ class Process(Station):
                 yield self.env.process(self.set_to_work())
 
                 processing_time = self._sample_exp_time(
-                    time=self.processing_time,
+                    time=self.processing_time + carrier.get_additional_processing_time(self.name),
                     scale=self.processing_std,
                     rework_probability=self.rework_probability,
                 )
@@ -581,9 +581,12 @@ class Source(Station):
 
     Args:
         name (str): Name of the Cell
-        part_specs (list): List of dictionaries. Each dict contain specification about a part that
-            is assembled on the carrier i.e.: [{"assembly_condition": 5}]. Assembly condition
-            defines the maxmim time a part can be on the line before not being able to be assembled.
+        carrier_specs (dict): Nested dict. Top level descripes carrier types, each consists of a
+            dict specifying different parts setup on the carrier at the source. The part level
+            specifies how the part behaves at future processes along the layout. For instance a spec
+            `{'C': {'Part1': {'Process1': {'assembly_condition': 5}, 'Process2': {'extra_processing_time': 10}}}}` 
+            tells that the produced carrier has one part `Part1` that has to fullfill an assembly condition of `5` 
+            at station `Process1` and gets an additional processing time of `10` at `Process2`.
         buffer_in (lineflow.simulation.connectors.Buffer, optional): Buffer in
         buffer_out (obj): Buffer out
         processing_time (float): Time it takes to put part on carrier (carrier needs to be
@@ -594,12 +597,13 @@ class Source(Station):
         unlimited_carriers (bool): If source has the ability to create unlimited carriers
         carrier_capacity (int): Defines how many parts can be assembled on a carrier. If set to
             default (infinity) or > 15, carrier will be visualized with one part.
+        carrier_min_creation (int): Minimum number of carriers of same spec created subsequentially
+        carrier_max_creation (int): Maximum number of carriers of same spec created subsequentially
 
     '''
     def __init__(
         self,
         name,
-        part_specs=None,
         buffer_in=None,
         buffer_out=None,
         processing_time=2,
@@ -611,6 +615,9 @@ class Source(Station):
         actionable_waiting_time=True,
         unlimited_carriers=False,
         carrier_capacity=np.inf,
+        carrier_specs=None,
+        carrier_min_creation=1,
+        carrier_max_creation=None,
     ):
         super().__init__(
             name=name,
@@ -633,15 +640,17 @@ class Source(Station):
         self.actionable_magazin = actionable_magazin
         self.actionable_waiting_time = actionable_waiting_time
 
-        if part_specs is None:
-            part_specs = [None]
-
-        self.part_specs = part_specs
-        self.part_id = 1
+        if carrier_specs is None:
+            carrier_specs = {"carrier": {"part": {}}}
+        self.carrier_specs = carrier_specs
 
         self.unlimited_carriers = unlimited_carriers
         self.carrier_capacity = carrier_capacity
         self.carrier_id = 1
+        self.carrier_min_creation = carrier_min_creation
+        self.carrier_max_creation = carrier_max_creation if carrier_max_creation is not None else 2*carrier_min_creation
+
+        self._carrier_counter = 0
 
         self.init_waiting_time = waiting_time
 
@@ -650,9 +659,19 @@ class Source(Station):
         self.state = ObjectStates(
             DiscreteState('on', categories=[True, False], is_actionable=False, is_observable=False),
             DiscreteState('mode', categories=['working', 'waiting', 'failing']),
-            DiscreteState('waiting_time', categories=np.arange(0, 100, self.waiting_time_step), is_actionable=self.actionable_waiting_time),
+            DiscreteState(
+                name='waiting_time', 
+                categories=np.arange(0, 100, self.waiting_time_step), 
+                is_actionable=self.actionable_waiting_time,
+            ),
             TokenState(name='carrier', is_observable=False),
             TokenState(name='part', is_observable=False),
+            DiscreteState(
+                name='carrier_spec', 
+                categories=list(self.carrier_specs.keys()), 
+                is_actionable=False,
+                is_observable=True,
+            ),
         )
 
         self.state['waiting_time'].update(self.init_waiting_time)
@@ -660,6 +679,7 @@ class Source(Station):
         self.state['mode'].update("waiting")
         self.state['carrier'].update(None)
         self.state['part'].update(None)
+        self.state['carrier_spec'].update(list(self.carrier_specs.keys())[0])
 
     def _assert_init_args(self, unlimited_carriers, carrier_capacity, buffer_in):
         if unlimited_carriers:
@@ -671,24 +691,42 @@ class Source(Station):
                 raise AttributeError("Type of carrier capacity must be int or np.inf")
 
     def create_carrier(self):
-        name = f'{self.name}_cr_{self.carrier_id}'
-        carrier = Carrier(self.env, name=name, capacity=self.carrier_capacity)
+
+        if self._carrier_counter == 0:
+            carrier_spec = self.random.choice(list(self.carrier_specs.keys()))
+            self.state['carrier_spec'].update(carrier_spec)
+            self._carrier_counter = self.random.randint(
+                self.carrier_min_creation, 
+                self.carrier_max_creation + 1,
+            )
+
+        carrier_spec = self.state['carrier_spec'].to_str()
+
+        name = f'{self.name}_{carrier_spec}_{self.carrier_id}'
+        carrier = Carrier(
+            self.env, 
+            name=name, 
+            capacity=self.carrier_capacity, 
+            part_specs=self.carrier_specs[carrier_spec],
+        )
         self.carrier_id += 1
+        self._carrier_counter -= 1
+
         return carrier
 
-    def create_parts(self):
+    def create_parts(self, carrier):
         """
         Creates the parts based on the part_specs attribute
         For each dict in the part_specs list one part is created
         """
+
         parts = []
-        for part_spec in self.part_specs:
+        for part_id, (part_name, part_spec) in enumerate(carrier.part_specs.items()):
             part = Part(
                 env=self.env,
-                name=self.name + '_part_' + str(self.part_id),
+                name=f"{carrier.name}_{part_name}_{part_id}",
                 specs=part_spec,
             )
-            self.part_id += 1
             part.create(self.position)
             parts.append(part)
         return parts
@@ -702,7 +740,7 @@ class Source(Station):
 
     def assemble_carrier(self, carrier):
 
-        parts = self.create_parts()
+        parts = self.create_parts(carrier)
         self.state['part'].update(parts[0].name)
 
         processing_time = self._sample_exp_time(
@@ -1018,6 +1056,9 @@ class Magazine(Station):
         actionable_magazine=True,
         carrier_getting_time=2,
         carriers_in_magazine=0,
+        carrier_specs=None,
+        carrier_min_creation=1,
+        carrier_max_creation=None,
     ):
         super().__init__(
             name=name,
@@ -1033,10 +1074,17 @@ class Magazine(Station):
         self.actionable_magazine = actionable_magazine
         self.init_carriers_in_magazine = carriers_in_magazine
         self.carrier_getting_time = carrier_getting_time
+
+        if carrier_specs is None:
+            carrier_specs = {"carrier": {"part": {}}}
+        self.carrier_specs = carrier_specs
+
         self.unlimited_carriers = unlimited_carriers
         self.carrier_capacity = carrier_capacity
-
         self.carrier_id = 1
+        self.carrier_min_creation = carrier_min_creation
+        self.carrier_max_creation = carrier_max_creation if carrier_max_creation is not None else 2*carrier_min_creation
+        self._carrier_counter = 0
 
     def init_state(self):
 
@@ -1071,9 +1119,23 @@ class Magazine(Station):
                 raise AttributeError(f"Only magazine or unlimited_carriers {unlimited_carriers} is required")
 
     def create_carrier(self):
-        name = f'{self.name}_cr_{self.carrier_id}'
-        carrier = Carrier(self.env, name=name, capacity=self.carrier_capacity)
+        if self._carrier_counter == 0:
+            self._current_carrier_spec = self.random.choice(list(self.carrier_specs.keys()))
+            self._carrier_counter = self.random.randint(
+                self.carrier_min_creation, 
+                self.carrier_max_creation + 1,
+            )
+
+        name = f'{self.name}_{self._current_carrier_spec}_{self.carrier_id}'
+        carrier = Carrier(
+            self.env, 
+            name=name, 
+            capacity=self.carrier_capacity, 
+            part_specs=self.carrier_specs[self._current_carrier_spec],
+        )
         self.carrier_id += 1
+        self._carrier_counter -= 1
+
         return carrier
 
     def _initial_fill_magazine(self, n_carriers):

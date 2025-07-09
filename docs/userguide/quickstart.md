@@ -15,6 +15,7 @@ class SimpleLine(Line):
         Source(
             name='Source',
             processing_time=5,
+            unlimited_carriers=True,
             buffer_out=buffer,
             position=(100, 300),
         )
@@ -30,9 +31,9 @@ from lineflow.simulation import Line, Source, Sink
 class SimpleLine(Line):
 
     def build(self):
-        source = Source(name='Source', processing_time=5, position=(100, 300))
+        source = Source(name='Source', processing_time=5, position=(100, 300), unlimited_carriers=True)
         sink = Sink('Sink', position=(600, 300))
-        sink.connect_to_output(station=source, capacity=6)
+        source.connect_to_output(station=sink, capacity=6)
 ```
 
 

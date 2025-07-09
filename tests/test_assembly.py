@@ -34,9 +34,9 @@ class SimpleLine(Line):
             processing_std=0,
             buffer_out=buffer_3,
             position=(300, 400),
-            part_specs=[{
-                "assembly_condition": 10
-            }],
+            carrier_specs={
+                'A': {'Part': {'Assembly': {"assembly_condition": 10}}}
+            },
             unlimited_carriers=True,
             carrier_capacity=1,
         )
@@ -99,9 +99,9 @@ class SimpleLineWithValidProcessingCondition(Line):
             buffer_in=buffer_5,
             buffer_out=buffer_3,
             position=(300, 400),
-            part_specs=[{
-                "assembly_condition": 14
-            }],
+            carrier_specs={
+                'A': {'Part': {'Assembly': {"assembly_condition": 14}}}
+            },
         )
 
         Assembly(
@@ -163,9 +163,9 @@ class SimpleLineWithSendingBack(Line):
             buffer_out=buffer_3,
             buffer_in=buffer_5,
             position=(300, 400),
-            part_specs=[{
-                "assembly_condition": 5
-            }],
+            carrier_specs={
+                'A': {'Part': {'Assembly': {"assembly_condition": 5}}}
+            },
         )
 
         Assembly(
@@ -222,8 +222,8 @@ class TestAssembly(unittest.TestCase):
         # 5 (processing) + 1 (put) + 1 (get next one)
         self.assertEqual(
             self.df_valid[
-                (self.df_valid['carrier'] == 'Magazine Source_cr_2') &
-                (self.df_valid['carrier_component'] == 'Magazine Component Source_cr_2')
+                (self.df_valid['carrier'] == 'Magazine Source_carrier_2') &
+                (self.df_valid['carrier_component'] == 'Magazine Component Source_carrier_2')
             ].iloc[0]["T_start"],
             26
         )
@@ -231,6 +231,7 @@ class TestAssembly(unittest.TestCase):
     def test_assembly_condition(self):
         # Should only have one carrier + None
         self.assertEqual(len(self.df["carrier"].unique()), 2)
+        
 
         # Should have multiple carrier_components
         self.assertGreater(len(self.df["carrier_component"].unique()), 2)

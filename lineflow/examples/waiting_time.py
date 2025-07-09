@@ -150,9 +150,9 @@ class WaitingTime(Line):
             waiting_time=0,
             waiting_time_step=1,
             carrier_capacity=1,
-            part_specs=[{
-                "assembly_condition": self.assembly_condition
-            }],
+            carrier_specs={
+                'carrier': {"Part": {"Assembly": {"assembly_condition": self.assembly_condition}}}
+            },
             unlimited_carriers=True,
             actionable_waiting_time=True,
         )

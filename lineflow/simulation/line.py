@@ -89,6 +89,21 @@ class Line:
                 raise ValueError(f'Multiple objects with name {obj.name} exist')
             self._objects[obj.name] = obj
 
+        # Validate carrier specs
+        for obj in self._objects.values():
+            if hasattr(obj, 'carrier_specs'):
+                self._validate_carrier_specs(obj.carrier_specs)
+
+    def _validate_carrier_specs(self, specs):
+        for carrier_name, part_specs in specs.items():
+            for part_name, part_spec in part_specs.items():
+                for station in part_spec.keys():
+                    if station not in self._objects:
+                        raise ValueError(
+                                f"Spec for part '{part_name}' in carrier '{carrier_name}' "
+                                f"contains unkown station '{station}'"
+                        )
+
     def _build_states(self):
         """
         Builds the states of the line objects as well as the LineState

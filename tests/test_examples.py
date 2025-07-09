@@ -10,6 +10,7 @@ from lineflow.examples import (
     WaitingTime,
     MultiSink,
     ComplexLine,
+    PartDependentProcessLine,
 )
 
 from lineflow.examples.complex_line import make_agent
@@ -79,9 +80,11 @@ class TestExamples(unittest.TestCase):
         line = MultiSink()
         line.run(simulation_end=400)
 
+    def test_part_dependent_process_line(self):
+        line = PartDependentProcessLine()
+        line.run(simulation_end=400)
+
     def test_complex_line(self):
-
-
         line = ComplexLine(n_workers=15, alternate=False, n_assemblies=5)
         agent = make_agent(
             state=line.state,

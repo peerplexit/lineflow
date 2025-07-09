@@ -118,14 +118,14 @@ class Part(MovableObject):
         super(Part, self).__init__(env, name, specs=specs)
         self._color = color
 
-    def is_valid_for_assembly(self):
+    def is_valid_for_assembly(self, station_name):
         """
         If the part has an `assembly_condition` in its specification, then it checks whether the
         time between its creation and now is smaller than this condition. Otherwise it will just
         return true.
         """
-        if "assembly_condition" in self.specs:
-            return (self.env.now - self["creation_time"]) < self["assembly_condition"]
+        if "assembly_condition" in self.specs.get(station_name, {}):
+            return (self.env.now - self["creation_time"]) < self.specs[station_name]["assembly_condition"]
         else:
             return True
 
@@ -141,12 +141,16 @@ class Part(MovableObject):
 
 class Carrier(MovableObject):
 
-    def __init__(self, env, name, color='Black', width=30, height=10, capacity=np.inf):
+    def __init__(self, env, name, color='Black', width=30, height=10, capacity=np.inf, part_specs=None):
         super(Carrier, self).__init__(env, name, specs=None)
         self.capacity = capacity
         self._color = color
         self._width = width
         self._height = height
+
+        if part_specs is None:
+            part_specs = {}
+        self.part_specs = part_specs.copy()
 
         self._width_part = 0.8*self._width
         if capacity < 15:
@@ -163,6 +167,10 @@ class Carrier(MovableObject):
 
         if not hasattr(part, "creation_time"):
             raise ValueError('Part not created')
+
+        if self.capacity == len(self.parts):
+            raise ValueError('Carrier is already full. Check your carrier_capacity')
+
         self.parts[part.name] = part
 
     def _draw_shape(self, screen):
@@ -203,3 +211,15 @@ class Carrier(MovableObject):
     def __iter__(self):
         for part in self.parts.values():
             yield part
+
+    def get_additional_processing_time(self, station):
+         total_time = 0
+
+         for part in self:
+             processing_time = part.specs.get(station, {}).get("extra_processing_time", 0)
+             total_time += processing_time
+
+         return total_time
+
+
+
