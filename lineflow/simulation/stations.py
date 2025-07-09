@@ -581,9 +581,12 @@ class Source(Station):
 
     Args:
         name (str): Name of the Cell
-        carrier_specs (list): List of dictionaries. Each dict contain specification about a carrier that
-            is assembled on the carrier i.e.: [{"assembly_condition": 5}]. Assembly condition
-            defines the maxmim time a part can be on the line before not being able to be assembled.
+        carrier_specs (dict): Nested dict. Top level descripes carrier types, each consists of a
+            dict specifying different parts setup on the carrier at the source. The part level
+            specifies how the part behaves at future processes along the layout. For instance a spec
+            `{'C': {'Part1': {'Process1': {'assembly_condition': 5}, 'Process2': {'extra_processing_time': 10}}}}` 
+            tells that the produced carrier has one part `Part1` that has to fullfill an assembly condition of `5` 
+            at station `Process1` and gets an additional processing time of `10` at `Process2`.
         buffer_in (lineflow.simulation.connectors.Buffer, optional): Buffer in
         buffer_out (obj): Buffer out
         processing_time (float): Time it takes to put part on carrier (carrier needs to be

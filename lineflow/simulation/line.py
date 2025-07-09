@@ -90,7 +90,6 @@ class Line:
             self._objects[obj.name] = obj
 
         # Validate carrier specs
-
         for obj in self._objects.values():
             if hasattr(obj, 'carrier_specs'):
                 self._validate_carrier_specs(obj.carrier_specs)
